@@ -1,0 +1,369 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="css/stack-interface.css" rel="stylesheet" type="text/css" media="all">
+    <link href="css/socicon.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="css/bootstrap.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="css/flickity.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="css/stack-interface.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="css/theme-aqua.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="css/custom.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:200,300,400,400i,500,600,700" rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="192x192" href="/android-icon-192x192.png">
+    <style>
+        /* Always set the map height explicitly to define the size of the div
+       * element that contains the map. */
+        #map {
+            height: 400px;
+            /* The height is 400 pixels */
+            width: 100%;
+            /* The width is the width of the web page */
+        }
+
+        #description {
+            font-family: Roboto;
+            font-size: 15px;
+            font-weight: 300;
+        }
+
+        #infowindow-content .title {
+            font-weight: bold;
+        }
+
+        #infowindow-content {
+            display: none;
+        }
+
+        #map #infowindow-content {
+            display: inline;
+        }
+
+        .pac-card {
+            margin: 10px 10px 0 0;
+            border-radius: 2px 0 0 2px;
+            box-sizing: border-box;
+            -moz-box-sizing: border-box;
+            outline: none;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            background-color: #fff;
+            font-family: Roboto;
+        }
+
+        #pac-container {
+            padding-bottom: 12px;
+            margin-right: 12px;
+        }
+
+        .pac-controls {
+            display: inline-block;
+            padding: 5px 11px;
+        }
+
+        .pac-controls label {
+            font-family: Roboto;
+            font-size: 13px;
+            font-weight: 300;
+        }
+
+        #pac-input {
+            background-color: #fff;
+            font-family: Roboto;
+            font-size: 15px;
+            font-weight: 300;
+            margin-left: 12px;
+            padding: 0 11px 0 13px;
+            text-overflow: ellipsis;
+            width: 230px;
+        }
+
+        #pac-input:focus {
+            border-color: #4d90fe;
+        }
+
+        #title {
+            color: #fff;
+            background-color: #4d90fe;
+            font-size: 25px;
+            font-weight: 500;
+            padding: 6px 12px;
+        }
+
+        #target {
+            width: 345px;
+        }
+    </style>
+    <script>
+        // This example requires the Places library. Include the libraries=places
+        // parameter when you first load the API. For example:
+        // <script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places">
+
+        var map;
+        var service;
+        var infowindow;
+
+        function initMap() {
+            var rotterdam = new google.maps.LatLng(51.9240111, 4.476311, 16);
+            infowindow = new google.maps.InfoWindow();
+            map = new google.maps.Map(document.getElementById('map'), {
+                center: rotterdam,
+                zoom: 14,
+                mapTypeId: 'roadmap'
+            });
+
+            var input = document.getElementById('pac-input');
+            var searchBox = new google.maps.places.SearchBox(input);
+            map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+
+            // Bias the SearchBox results towards current map's viewport.
+            map.addListener('bounds_changed', function () {
+                searchBox.setBounds(map.getBounds());
+            });
+
+            var markers = [];
+            // Listen for the event fired when the user selects a prediction and retrieve
+            // more details for that place.
+            searchBox.addListener('places_changed', function () {
+                var places = searchBox.getPlaces();
+
+                if (places.length == 0) {
+                    return;
+                }
+                // For each place, get the icon, name and location.
+                var bounds = new google.maps.LatLngBounds();
+                places.forEach(function (place) {
+                    if (!place.geometry) {
+                        console.log("Returned place contains no geometry");
+                        return;
+                    }
+                    var icon = {
+                        url: place.icon,
+                        size: new google.maps.Size(71, 71),
+                        origin: new google.maps.Point(0, 0),
+                        anchor: new google.maps.Point(17, 34),
+                        scaledSize: new google.maps.Size(25, 25)
+                    };
+
+                    // Create a marker for each place.
+                    markers.push(new google.maps.Marker({
+                        map: map,
+                        icon: icon,
+                        title: place.name,
+                        position: place.geometry.location
+                    }));
+
+                    if (place.geometry.viewport) {
+                        // Only geocodes have viewport.
+                        bounds.union(place.geometry.viewport);
+                    } else {
+                        bounds.extend(place.geometry.location);
+                    }
+                });
+                map.fitBounds(bounds);
+            });
+
+            // var request = {
+            //     location: rotterdam,
+            //     radius: '6000',
+            //     type: ['cafe']
+            // };
+            // var request = {
+            //     query: 'Coffee',
+            //     fields: ['name', 'geometry'],
+            // };
+
+
+            // service = new google.maps.places.PlacesService(map);
+            // service.nearbySearch(request, callback);
+            // service = new google.maps.places.PlacesService(map);
+
+
+            // service.findPlaceFromQuery(request, function (results, status) {
+            //     if (status === google.maps.places.PlacesServiceStatus.OK) {
+            //         for (var i = 0; i < results.length; i++) {
+            //             createMarker(results[i]);
+            //         }
+
+            //         map.setCenter(results[0].geometry.location);
+            //     }
+            // });
+        }
+
+        function createMarker(place) {
+            var marker = new google.maps.Marker({
+                map: map,
+                position: place.geometry.location
+            });
+
+            google.maps.event.addListener(marker, 'click', function () {
+                infowindow.setContent(place.name);
+                infowindow.open(map, this);
+            });
+        }
+    </script>
+</head>
+
+<body data-smooth-scroll-offset="77">
+    <div class="nav-container">
+        <div>
+            <nav class="bar bar-toggle">
+                <div class="container">
+                    <div class="row align-items-center">
+                        <div class="col-6">
+                            <div class="bar__module">
+                                <a href="index.html"></a>
+                            </div>
+                        </div>
+                        <div class="col-6 d-flex justify-content-end">
+                            <div class="bar__module">
+                                <a class="menu-toggle pull-right" href="#" data-notification-link="sidebar-menu"> <i
+                                        class="stack-interface stack-menu"></i> </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+            <div class="notification pos-right pos-top side-menu bg--white" data-notification-link="sidebar-menu"
+                data-animation="from-right">
+                <div class="side-menu__module pos-vertical-center text-right">
+                    <ul class="menu-vertical">
+                        <li class="h4"> <a href="index.html">Intro</a> </li>
+                        <li class="h4"> <a href="opleiding.html">Opleiding</a> </li>
+                        <li class="h4"> <a href="werkervaring.html">Werkervaring</a> </li>
+                        <li class="h4"> <a href="hobbys.html" style="color: #28DDB6;">Hobby's</a> </li>
+                    </ul>
+                </div>
+                <div class="side-menu__module pos-vertical-center text-right">
+                    <div class="LI-profile-badge"  data-version="v1" data-size="medium" data-locale="en_US" data-type="vertical" data-theme="light" data-vanity="bakkerjason"><a class="LI-simple-link" href='https://nl.linkedin.com/in/bakkerjason?trk=profile-badge'>Jason Bakker</a></div>
+                </div>
+                <div class="side-menu__module pos-bottom pos-absolute col-12 text-right">
+                    <ul class="social-list list-inline list--hover">
+                        <li><a href="https://www.eyeem.com/u/jase084r" target="_blank"><img
+                                    src="img/icons/android-icon-192x192.png" style="width:19px; margin-bottom:5px;"></a>
+                        </li>
+                        <li><a href="https://www.linkedin.com/in/bakkerjason/" target="_blank"><i
+                                    class="socicon-linkedin"></i></a></li>
+                        <li><a href="https://www.facebook.com/jason.bakker1" target="_blank"><i
+                                    class="socicon socicon-facebook icon icon--xs"></i></a></li>
+                        <li><a href="https://www.instagram.com/jase084/" target="_blank"><i
+                                    class="socicon socicon-instagram icon icon--xs"></i></a></li>
+                        <li><a href="https://github.com/jasonbakker084" target="_blank"><i
+                                    class="socicon-github"></i></a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="main-container">
+        <section class="cover imagebg text-center height-100 parallax" data-overlay="1">
+            <div class="background-image-holder background--top"> <img alt="background"
+                    src="img/fotografie/IMG_0523.jpg"> </div>
+            <div class="container pos-vertical-center">
+                <div class="row">
+                    <div class="col-md-8"> <img alt="Image" class="unmarg--bottom" src="img/headline-1.png">
+                        <h5>Hobby's</h5>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+        <section class="switchable">
+            <div class="container">
+                <div class="row justify-content-between">
+                    <div class="col-md-6 col-lg-5">
+                        <ul class="accordion accordion-1 accordion--oneopen">
+                            <li class="active">
+                                <div class="accordion__title"> <span class="h5">Product fotografie</span> </div>
+                                <div class="accordion__content">
+                                    <p class="lead">Ik maak professionele productfoto's voor website en webshops.</p>
+
+                                </div>
+                            </li>
+                            <li>
+                                <div class="accordion__title"> <span class="h5">Stadsfotografie</span> </div>
+                                <div class="accordion__content">
+                                    <p class="lead"> Rotterdam is voor mij een broedplaats als het gaat om creativiteit
+                                        en dynamiek. Geweldig voor foto's. Check mijn <a
+                                            href="https://www.eyeem.com/u/jase084r"
+                                            target="_blank"><strong>EyeEm</strong></a> profiel voor meer foto's. </p>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="accordion__title"> <span class="h5">Barista Experience</span> </div>
+                                <div class="accordion__content">
+                                    <p class="lead">Voor de koffie connaiseurs heb ik altijd lekkere koffie in huis en
+                                        geef ik training en advies als barista trainer. Ook beschikbaar voor kleine
+                                        evenementen als barista service! </p>
+                                </div>
+                            </li>
+                            <li>
+                                <div class="accordion__title"> <span class="h5">Coffee Bar locator</span> </div>
+                                <div class="accordion__content">
+                                    <!-- <p class="lead">Voor als ik onderweg ben en mijn cafeine verslaving wil </p> -->
+                                    <input id="pac-input" class="controls" type="text" placeholder="Name Coffee bar">
+                                    <div id="map"></div>
+                                </div>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="col-lg-6 col-md-6">
+                        <div class="slider box-shadow-wide border--round" data-arrows="true" data-paging="true"
+                            style="height: 359px;">
+                            <ul class="slides">
+                                <li> <img alt="img" src="img/fotografie/Semi%20Washed%20koffie.jpg"> </li>
+                                <li> <img alt="img" src="img/fotografie/_DSC0643.jpg"> </li>
+                                <li> <img alt="img" src="img/fotografie/_DSC6444.jpg"> </li>
+                                <li> <img alt="img" src="img/fotografie/_DSC6447.jpg"> </li>
+                                <li> <img alt="img" src="img/fotografie/_DSC6402.jpg"> </li>
+                                <li> <img alt="img" src="img/fotografie/_DSC6404.jpg"> </li>
+                                <li> <img alt="img" src="img/fotografie/_DSC0990.jpg"> </li>
+                                <li> <img alt="img" src="img/fotografie/_DSC2652.jpg"> </li>
+                                <li> <img alt="img" src="img/fotografie/_DSC2636.jpg"> </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="footer-7 text-center-xs">
+            <div class="container">
+                <div class="row">
+                    <div class="col-sm-6"> <span class="type--fine-print">© <span class="update-year"></span> Jason
+                            Bakker — All Rights Reserved</span>
+                    </div>
+                    <div class="col-sm-6 text-right text-center-xs">
+                        <ul class="social-list list-inline">
+                            <li><a href="https://www.eyeem.com/u/jase084r" target="_blank"><img
+                                        src="img/icons/android-icon-192x192.png"
+                                        style="width: 19px; margin-bottom: 5px;"></a></li>
+                            <li><a href="https://www.linkedin.com/in/bakkerjason/" target="_blank"><i
+                                        class="socicon-linkedin"></i></a></li>
+                            <li><a href="https://www.facebook.com/jason.bakker1" target="_blank"><i
+                                        class="socicon socicon-facebook icon icon--xs"></i></a></li>
+                            <li><a href="https://www.instagram.com/jase084/" target="_blank"><i
+                                        class="socicon socicon-instagram icon icon--xs"></i></a></li>
+                            <li><a href="https://github.com/jasonbakker084" target="_blank"><i
+                                        class="socicon-github"></i></a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+    <script type="text/javascript" src="https://platform.linkedin.com/badges/js/profile.js" async defer></script>
+    <script
+        src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAZ4YDzV7tcMfrY6-_lKKE2bzpPWs3NU6c&libraries=places&callback=initMap"
+        async defer></script>
+    <script src="js/jquery-3.1.1.min.js"></script>
+    <script src="js/flickity.min.js"></script>
+    <script src="js/parallax.js"></script>
+    <script src="js/smooth-scroll.min.js"></script>
+    <script src="js/scripts.js"></script>
+
+</body>
+
+</html>
